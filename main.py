@@ -3,6 +3,8 @@ import os
 import logging
 import threading
 import uvicorn
+import signal
+import sys
 from typing import Any, Dict, Optional
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import PlainTextResponse, JSONResponse
@@ -22,9 +24,11 @@ log.addHandler(h)
 log.setLevel(logging.INFO)
 
 
-def require_env(key: str) -> str:
+def get_env(key: str, *default: str) -> str:
     val = os.getenv(key)
-    if not val:  # catches None and ""
+    if val is None or val == "":               # treat empty as missing
+        if default:                            # default provided -> use it
+            return default[0]
         raise RuntimeError(f"You forgor...💀 the environment var: {key}")
     return val
 
@@ -33,7 +37,13 @@ def startPB():
     port = 8080
     cmd = ["stdbuf", "-oL", "-eL", "pocketbase",
            "serve", "--http", f"127.0.0.1:{port}"]
-    log.info("Starting pocketbase backend")
+    pbDir = get_env("PB_DIR", "./pb_data/")
+    if pbDir != "":
+        cmd.append("--dir")
+        cmd.append(pbDir)
+    log.info(f"Starting pocketbase backend with data: {
+             os.path.normpath(os.path.join(os.getcwd(), pbDir))}")
+    global p
     p = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -50,6 +60,12 @@ def startPB():
     t = threading.Thread(target=pump, args=(p.stdout,), daemon=True)
     t.start()
     log.info(f"Pocketbase started on port: {port}")
+
+
+def stopPB():
+    log.info("Force killing PocketBase (SIGKILL)...")
+    global p
+    os.killpg(p.pid, signal.SIGKILL)
 
 
 app = FastAPI()
@@ -71,5 +87,12 @@ def startBackup():
     return JSONResponse({"ok": True})
 
 
+def KeyboardInterruptHandler(sig, frame):
+    stopPB()
+
+
+signal.signal(signal.SIGINT, KeyboardInterruptHandler)
+
 if __name__ == "__main__":
+    startPB()
     uvicorn.run(app, host="0.0.0.0", port=8000)

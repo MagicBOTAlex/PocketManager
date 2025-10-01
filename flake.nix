@@ -36,7 +36,7 @@
           ]);
         start = pkgs.writeShellApplication {
           name = "start";
-          runtimeInputs = [ pythonEnv ];
+          runtimeInputs = [ pythonEnv pkgs.pocketbase ];
           text = ''
             set -euo pipefail
             exec ${pythonEnv}/bin/python main.py
