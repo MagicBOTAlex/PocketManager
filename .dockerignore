@@ -1,0 +1,6 @@
+.env
+pb_data/
+pb_migrations/
+venv/
+__pycache__/
+

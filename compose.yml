@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  pocket-manager:
+    build: .
+    container_name: pocket-manager
+    stdin_open: true   # keep STDIN open (like -i)
+    tty: true          # allocate a TTY (like -t)
+    ports:
+      - "3434:8080"
+      - "3435:8000"
+    environment:
+        REMOTE_HOST: ${REMOTE_HOST}
+        REMOTE_BACKUP_PATH: ${REMOTE_BACKUP_PATH}
+    volumes:
+      - nix-cache:/nix   # persist /nix (store + db + profiles)
+      - "./../pb_data/:/pb_data/"
+      - "~/.ssh/id_ed25519:/SSH_PRIV_KEY:ro"
+
+volumes:
+  nix-cache:
+

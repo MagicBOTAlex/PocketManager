@@ -18,7 +18,6 @@ from backup import startBackup
 
 env_path = find_dotenv(usecwd=True)
 loaded = load_dotenv(env_path, override=True)
-assert loaded, f".env not found. CWD={os.getcwd()}"
 
 # --- manager logger ---
 log = logging.getLogger("pb_mgr")
@@ -41,7 +40,7 @@ def startPB():
     port = 8080
     cmd = ["stdbuf", "-oL", "-eL", "pocketbase",
            "serve", "--http", f"127.0.0.1:{port}"]
-    pbDir = get_env("PB_DIR", "./pb_data/")
+    pbDir = get_env("PB_DIR", "/pb_data/")
     if pbDir != "":
         cmd.append("--dir")
         cmd.append(pbDir)

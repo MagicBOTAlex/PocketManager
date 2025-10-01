@@ -11,7 +11,6 @@ from dotenv import load_dotenv, find_dotenv
 
 env_path = find_dotenv(usecwd=True)
 loaded = load_dotenv(env_path, override=True)
-assert loaded, f".env not found. CWD={os.getcwd()}"
 
 logging.basicConfig(format='[BB] %(message)s', level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -55,7 +54,7 @@ def startBackup():
         "borg", "create",
         f"{get_env('REMOTE_HOST')}{get_env(
             'REMOTE_BACKUP_PATH')}/pocketBackup::{{now}}",
-        get_env("LOCAL_DIR"),
+        get_env("LOCAL_DIR", "/pb_data/"),
     ]
     tokens = cmd[:]
 
@@ -72,7 +71,7 @@ def startBackup():
 
     env = {
         **os.environ,
-        "BORG_RSH": "ssh -i ./id_ed25519 -p 224 -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new",
+        "BORG_RSH": "ssh -i /SSH_PRIV_KEY -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new",
         "BORG_UNKNOWN_UNENCRYPTED_REPO_ACCESS_IS_OK": "yes",
     }
     proc = subprocess.Popen(
