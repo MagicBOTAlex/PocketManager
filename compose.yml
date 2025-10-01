@@ -15,7 +15,7 @@ services:
         GITKEY: ${GITKEY}
     volumes:
       - nix-cache:/nix   # persist /nix (store + db + profiles)
-      - "./../pb_data/:/pb_data/"
+      - "${PB_DIR}:/pd_data"
       - "~/.ssh/id_ed25519:/SSH_PRIV_KEY:ro"
 
 volumes:
