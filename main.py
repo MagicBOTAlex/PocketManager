@@ -39,7 +39,7 @@ def get_env(key: str, *default: str) -> str:
 def startPB():
     port = 8080
     cmd = ["stdbuf", "-oL", "-eL", "pocketbase",
-           "serve", "--http", f"127.0.0.1:{port}"]
+           "serve", "--http", f"0.0.0.0:{port}"]
     pbDir = get_env("PB_DIR", "/pb_data/")
     if pbDir != "":
         cmd.append("--dir")
