@@ -1,3 +1,0 @@
-❯ borg init -e none ./pocketBackup
-
-❯ borg create --list "ssh://botserver@gitea.deprived.dev:224/~/test/pocketBackup::{now}" ./pb_data
