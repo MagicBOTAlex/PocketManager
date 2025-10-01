@@ -13,8 +13,8 @@ env_path = find_dotenv(usecwd=True)
 loaded = load_dotenv(env_path, override=True)
 assert loaded, f".env not found. CWD={os.getcwd()}"
 
-log = logging.getLogger("pb_mgr")
-log.setLevel(logging.INFO)
+logging.basicConfig(format='[BB] %(message)s', level=logging.INFO)
+log = logging.getLogger(__name__)
 
 size_re = re.compile(r"""
     (?P<o_val>\d+(?:\.\d+)?)\s*(?P<o_unit>[KMGTP]?B)\s+O\s+
@@ -68,7 +68,7 @@ def startBackup():
             except ValueError:
                 tokens.append(flag)
 
-    print("Sending: " + " ".join(tokens))
+    log.info("Sending: " + " ".join(tokens))
 
     env = {
         **os.environ,
@@ -123,13 +123,13 @@ def startBackup():
                 sys.stdout.flush()
             else:
                 # pass through regular log lines immediately
-                print(line, end="")
+                log.info(line.rstrip())
         proc.wait()
     except KeyboardInterrupt:
         proc.terminate()
-        print("\nInterrupted.", file=sys.stderr)
+        log.info("\nInterrupted.")
 
-    print()
+    log.info("")
     if proc.returncode == 0:
         log.info("Backup finished ✔")
     else:

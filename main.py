@@ -1,16 +1,20 @@
 # main.py was completly ChatGPT, but highly modified now
 import os
+import time
 import logging
+import asyncio
 import threading
 import uvicorn
 import signal
 import sys
 from typing import Any, Dict, Optional
 from fastapi import FastAPI, Header, HTTPException
+from fastapi import BackgroundTasks
 from fastapi.responses import PlainTextResponse, JSONResponse
 from pydantic import BaseModel
 import subprocess
 from dotenv import load_dotenv, find_dotenv
+from backup import startBackup
 
 env_path = find_dotenv(usecwd=True)
 loaded = load_dotenv(env_path, override=True)
@@ -81,10 +85,18 @@ def ping():
     return "pong"
 
 
-@app.post("/backup")
-def startBackup():
+def doBackupSequence():
+    stopPB()
+    time.sleep(1)
+    startBackup()
+    time.sleep(1)
+    startPB()
 
-    return JSONResponse({"ok": True})
+
+@app.post("/backup")
+async def backup():
+    asyncio.create_task(asyncio.to_thread(doBackupSequence))
+    return JSONResponse({"ok": True, "message": "Starting backup..."})
 
 
 def KeyboardInterruptHandler(sig, frame):
