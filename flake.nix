@@ -36,7 +36,12 @@
           ]);
         start = pkgs.writeShellApplication {
           name = "start";
-          runtimeInputs = [ pythonEnv pkgs.pocketbase ];
+          runtimeInputs = [
+            pythonEnv
+            pkgs.pocketbase
+            pkgs.borgbackup
+            pkgs.toybox
+          ];
           text = ''
             set -euo pipefail
             exec ${pythonEnv}/bin/python main.py
@@ -53,7 +58,9 @@
             python3Packages.wheel
             python3Packages.virtualenv
 
+            pkgs.borgbackup
             pkgs.pocketbase
+            pkgs.toybox
           ];
           shellHook = ''
             # Enable bash completion and case-insensitive completion
