@@ -1,0 +1,75 @@
+# main.py was completly ChatGPT, but highly modified now
+import os
+import logging
+import threading
+import uvicorn
+from typing import Any, Dict, Optional
+from fastapi import FastAPI, Header, HTTPException
+from fastapi.responses import PlainTextResponse, JSONResponse
+from pydantic import BaseModel
+import subprocess
+from dotenv import load_dotenv, find_dotenv
+
+env_path = find_dotenv(usecwd=True)
+loaded = load_dotenv(env_path, override=True)
+assert loaded, f".env not found. CWD={os.getcwd()}"
+
+# --- manager logger ---
+log = logging.getLogger("pb_mgr")
+h = logging.StreamHandler()
+h.setFormatter(logging.Formatter("[PB_MGR] %(message)s"))
+log.addHandler(h)
+log.setLevel(logging.INFO)
+
+
+def require_env(key: str) -> str:
+    val = os.getenv(key)
+    if not val:  # catches None and ""
+        raise RuntimeError(f"You forgor...💀 the environment var: {key}")
+    return val
+
+
+def startPB():
+    port = 8080
+    cmd = ["stdbuf", "-oL", "-eL", "pocketbase",
+           "serve", "--http", f"127.0.0.1:{port}"]
+    log.info("Starting pocketbase backend")
+    p = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+        preexec_fn=os.setsid,
+    )
+
+    def pump(src):
+        for line in src:
+            print(f"[PB] {line}", end="")   # tag every PB line
+
+    t = threading.Thread(target=pump, args=(p.stdout,), daemon=True)
+    t.start()
+    log.info(f"Pocketbase started on port: {port}")
+
+
+app = FastAPI()
+
+
+class WebhookPayload(BaseModel):
+    event_id: Optional[str] = None
+    data: Optional[Dict[str, Any]] = None
+
+
+@app.get("/ping", response_class=PlainTextResponse)
+def ping():
+    return "pong"
+
+
+@app.post("/backup")
+def startBackup():
+
+    return JSONResponse({"ok": True})
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
