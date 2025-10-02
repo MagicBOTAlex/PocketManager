@@ -40,7 +40,7 @@ def startPB():
     port = 8080
     cmd = ["stdbuf", "-oL", "-eL", "pocketbase",
            "serve", "--http", f"0.0.0.0:{port}"]
-    pbDir = get_env("INTERNAL_PB_DIR", "/pb_data/")
+    pbDir = get_env("INTERNAL_PB_DIR", "/pb_data")
     if pbDir != "":
         cmd.append("--dir")
         cmd.append(pbDir)
