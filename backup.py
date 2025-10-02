@@ -54,7 +54,7 @@ def startBackup():
         "borg", "create",
         f"{get_env('REMOTE_HOST')}{get_env(
             'REMOTE_BACKUP_PATH')}/pocketBackup::{{now}}",
-        get_env("PB_DIR", "/pb_data/"),
+        get_env("INTERNAL_PB_DIR", "/pb_data/"),
     ]
     tokens = cmd[:]
 
